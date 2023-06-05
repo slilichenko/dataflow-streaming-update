@@ -37,7 +37,7 @@ fi
 
 JOB_NAME="data-processing-${SUFFIX}"
 
-EXPERIMENTS=enable_recommendations
+EXPERIMENTS=enable_recommendations,enable_lightweight_streaming_update
 
 cd pipeline
 

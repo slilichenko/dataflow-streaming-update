@@ -49,12 +49,13 @@ public class EventPayloadToTableRow extends DoFn<PubsubMessage, TableRow> {
             return;
         }
         TableRow row = new TableRow();
+        // Publish time is the Pub/Sub publish time as reported by Pub/Sub.
         row.set("publish_ts", context.timestamp());
         row.set("pipeline_type", pipelineType);
 
         row.set("id", event.get("id"));
         // TODO: something is odd with this conversion. It loses precision.
-        // The documentation states that it should be milliseconds, but
+        // The documentation states that it should be milliseconds, but for some reason it seems to come as nanoseconds.
         row.set("request_ts", ((Number)event.get("request_timestamp")).longValue()/1000);
         row.set("dst_ip", event.get("destination_ip"));
         row.set("dst_port", event.get("destination_port"));

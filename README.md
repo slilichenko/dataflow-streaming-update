@@ -46,7 +46,7 @@ the pipelines being tested.
 ### Start the pipeline which will be updated
 
 ```shell
-./start-pipeline-to-be-updated.
+./start-main-pipeline.sh
 ```
 
 ### Update the pipeline

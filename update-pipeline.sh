@@ -25,6 +25,7 @@ function pipeline_has_started_processing() {
   local query_result=query_result.json
 
   # JSON doesn't allow multiline literals...
+  # TODO: this QML can/should be refined. For now we are just trying to get any signal that data is being processed.
   printf '
 {
   "pageSize": 100,
@@ -40,16 +41,23 @@ function pipeline_has_started_processing() {
     --data "@$query_file" \
     --compressed > $query_result
 
-  local transform_pcollection_element_count=$(jq -r .timeSeriesData[0].pointData[0].values[0].int64Value < $query_result)
+  local transform_pcollection_element_count
+  transform_pcollection_element_count=$(jq -r .timeSeriesData[0].pointData[0].values[0].int64Value < $query_result)
 
-  if ((pipeline_element_count > 0)); then
-    echo "Pipeline $pipeline_id processed at least ${transform_pcollection_element_count}!"
+  if [[ $transform_pcollection_element_count = 'null' ]]; then
+      echo "Metrics API doesn't show any data being processed yet for pipeline $pipeline_id"
+      return 1
+  fi
+
+  if (( transform_pcollection_element_count > 0 )); then
+    echo "Pipeline $pipeline_id processed at least ${transform_pcollection_element_count} elements"
     return 0
   else
-    echo "Metrics API doesn'\''s show any data being processed yet for pipeline $pipeline_id"
-    return 1
+    echo "Pipeline $pipeline_id hasn't yet processed elements in the Transform DoFn."
   fi
 }
+
+
 
 source ./get-terraform-output.sh
 
@@ -89,14 +97,12 @@ wait_start=$SECONDS
 TIMEOUT_IN_SECS=600
 while true
 do
-  sleep 30
+  sleep 15
   echo "Checking if the new pipeline ${replacement_pipeline_id} started processing..."
-  pipeline_has_started_processing "${PROJECT_ID}" "${replacement_pipeline_id}" \
-    && echo "It appears the new pipeline is processing the data already!" \
-    && break;
+  pipeline_has_started_processing "${PROJECT_ID}" "${replacement_pipeline_id}" && break
   if ((SECONDS - wait_start > TIMEOUT_IN_SECS)); then
-    echo "Couldn't determine if the new pipeline is processing the data, but reached the timeout of $TIMEOUT_IN_SECS"
-    break;
+    echo "Couldn't determine if the new pipeline is processing the data, but reached the timeout of $TIMEOUT_IN_SECS seconds"
+    break
   fi
 done
 
@@ -104,6 +110,10 @@ done
 echo "Starting draining the original pipeline..."
 gcloud dataflow jobs drain "${pipeline_id_to_replace}" --region "${GCP_REGION}"
 
+DEFAULT_MIN_WORKERS=2
+DEFAULT_MAX_WORKERS=10
+
 echo "Changing autoscaling parameters of the new pipeline..."
+./update-pipeline-scaling.sh "${PROJECT_ID}" "${GCP_REGION}" "${replacement_pipeline_id}" ${DEFAULT_MIN_WORKERS} ${DEFAULT_MAX_WORKERS}
 
 
