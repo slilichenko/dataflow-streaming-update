@@ -28,7 +28,7 @@ if [ "$#" -ge 3 ]; then
   SUFFIX="$TYPE-$PIPELINE_NUMBER"
 fi
 
-worker_parameters="--maxNumWorkers=10"
+worker_parameters="--maxNumWorkers=30"
 
 if [ "$#" -ge 4 ]; then
   number_of_workers=$4
@@ -59,4 +59,4 @@ set -x
  cd ..
 
 JOB_ID=$(gcloud dataflow jobs list --region "$GCP_REGION" --filter="NAME:${JOB_NAME} AND STATE:Pending" --format="get(JOB_ID)")
-echo $JOB_ID > last_launched_pipeline.id
+echo "$JOB_ID" > last_launched_pipeline.id

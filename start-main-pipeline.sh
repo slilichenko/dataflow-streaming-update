@@ -47,4 +47,4 @@ next_pipeline_number () {
   echo -n "$next_number"
 }
 
-./start-pipeline.sh 'main' "${UPDATE_SUBSCRIPTION}" "$(next_pipeline_number)" "${number_of_workers}"
+./start-pipeline.sh 'main' "${UPDATE_SUBSCRIPTION}" "$(next_pipeline_number)" ${number_of_workers}

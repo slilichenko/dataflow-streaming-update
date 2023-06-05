@@ -19,4 +19,5 @@
 set -e
 set -u
 
-./stop-pipelines.sh 'data-generator-*'
+./stop-pipelines.sh 'data-processing-baseline'
+./stop-pipelines.sh 'data-processing-main-*'

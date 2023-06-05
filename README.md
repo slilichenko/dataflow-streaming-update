@@ -58,7 +58,126 @@ in processing time
 ```
 
 ### Analyse the data
+All scripts below have time ranges defined in the beginning of the scripts. Adjust them as needed.
 
+#### Event latencies comparison
+Use the following query to compare latency of ingest of the baseline pipeline and the main pipeline:
+
+```sql
+DECLARE
+  start_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -40 MINUTE);
+DECLARE
+  end_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -20 MINUTE);
+WITH
+  latency AS (
+  SELECT
+    pipeline_type,
+    ingest_ts,
+    publish_ts,
+    TIMESTAMP_DIFF(ingest_ts, publish_ts, SECOND) latency_secs
+  FROM
+    pipeline_update.event
+  WHERE
+    publish_ts BETWEEN start_ts AND end_ts)
+SELECT
+  pipeline_type,
+  COUNT(*) total_events,
+  AVG(latency.latency_secs) average_latency_secs,
+  MIN(latency.latency_secs) min_latency_secs,
+  MAX(latency.latency_secs) max_latency_secs,
+  STDDEV(latency.latency_secs) std_deviation
+FROM
+  latency
+GROUP BY
+  pipeline_type
+ORDER BY
+  pipeline_type;
+```
+
+#### Missing records
+To check if there were missing records:
+```sql
+DECLARE
+  start_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -40 MINUTE);
+DECLARE
+  end_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -20 MINUTE);
+SELECT
+  COUNT(*) missed_events,
+FROM
+  pipeline_update.event base
+WHERE
+  base.publish_ts BETWEEN start_ts
+  AND end_ts
+  AND pipeline_type = 'baseline'
+  AND NOT EXISTS(
+  SELECT
+    *
+  FROM
+    pipeline_update.event main
+  WHERE
+    main.publish_ts BETWEEN start_ts
+    AND end_ts
+    AND pipeline_type = 'main'
+    AND base.id = main.id);
+```
+
+#### Duplicates
+Duplicate events
+```sql
+DECLARE
+  start_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -10040 MINUTE);
+DECLARE
+  end_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -20 MINUTE);
+
+SELECT
+  id,
+  pipeline_type,
+  COUNT(*) event_count,
+FROM
+  pipeline_update.event base
+WHERE
+  base.publish_ts BETWEEN start_ts
+  AND end_ts
+GROUP BY id, pipeline_type
+HAVING event_count > 1
+```
+
+#### Duplicate statistics
+```sql
+DECLARE
+  start_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -10040 MINUTE);
+DECLARE
+  end_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -20 MINUTE);
+WITH
+  counts AS (
+  SELECT
+    COUNT(id) total_event_count,
+    COUNT(DISTINCT id) event_distinct_count,
+    pipeline_type,
+  FROM
+    pipeline_update.event base
+  WHERE
+    base.publish_ts BETWEEN start_ts
+    AND end_ts
+  GROUP BY
+    pipeline_type)
+SELECT
+  event_distinct_count,
+  counts.total_event_count - counts.event_distinct_count AS dups_count,
+  (counts.total_event_count - counts.event_distinct_count)*100/counts.total_event_count dups_percentage
+FROM
+  counts
+ORDER BY
+  pipeline_type DESC;
+```
+
+## Cleanup
+
+```shell
+./stop-event-generation.sh
+./stop-processing-pipelines.sh
+terraform -chdir terraform destroy 
+```
 
 ## Contributing
 

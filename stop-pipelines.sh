@@ -19,4 +19,15 @@
 set -e
 set -u
 
-./stop-pipelines.sh 'data-generator-*'
+
+JOB_NAME_PATTERN=$1
+
+source ./get-terraform-output.sh
+
+JOB_IDS=$(gcloud dataflow jobs list --region "$GCP_REGION" --filter="NAME:${JOB_NAME_PATTERN} AND STATE:Running" --format="get(JOB_ID)")
+
+IFS=$'\n'
+id_array=($JOB_IDS)
+for (( i=0; i<${#id_array[@]}; i++ )) ; do
+    gcloud dataflow jobs drain --region "$GCP_REGION" "${id_array[$i]}"
+done
