@@ -16,6 +16,7 @@ project_id = "<your project id>"
 2. Create infrastructure to run:
 ```shell
 cd terraform
+terraform init
 terraform apply
 cd ..
 ```
@@ -125,7 +126,7 @@ WHERE
 Duplicate events
 ```sql
 DECLARE
-  start_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -10040 MINUTE);
+  start_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -40 MINUTE);
 DECLARE
   end_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -20 MINUTE);
 
@@ -145,7 +146,7 @@ HAVING event_count > 1
 #### Duplicate statistics
 ```sql
 DECLARE
-  start_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -10040 MINUTE);
+  start_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -40 MINUTE);
 DECLARE
   end_ts DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL -20 MINUTE);
 WITH
@@ -164,7 +165,8 @@ WITH
 SELECT
   event_distinct_count,
   counts.total_event_count - counts.event_distinct_count AS dups_count,
-  (counts.total_event_count - counts.event_distinct_count)*100/counts.total_event_count dups_percentage
+  (counts.total_event_count - counts.event_distinct_count)*100/counts.total_event_count dups_percentage,
+  pipeline_type
 FROM
   counts
 ORDER BY
