@@ -33,6 +33,8 @@ venv.bak/
 
 # Local .terraform directories
 **/.terraform/*
+**/.terraform.lock.hcl
+**/terraform.tfvars
 
 # .tfstate files
 *.tfstate
@@ -51,3 +53,9 @@ crash.*.log
 
 # Language Specific
 # ...
+
+# Temporary script files
+query.txt
+query_result.json
+
+last_launched_pipeline.id

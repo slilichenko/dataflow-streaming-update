@@ -1,0 +1,74 @@
+plugins {
+	id 'java'
+	id "com.diffplug.spotless" version "6.19.0"
+}
+
+group 'com.google.cloud.solutions.dataflow'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: "com.diffplug.spotless"
+
+ext {
+	dataflowBeamVersion = '2.47.0'
+}
+
+repositories {
+	mavenCentral()
+}
+
+spotless {
+	// optional: limit format enforcement to just the files changed by this feature branch
+	ratchetFrom 'origin/main'
+
+	format 'misc', {
+		// define the files to apply `misc` to
+		target '*.gradle', '*.md', '.gitignore'
+
+		// define the steps to apply to those files
+		trimTrailingWhitespace()
+		indentWithTabs() // or spaces. Takes an integer argument if you don't like 4
+		endWithNewline()
+	}
+	java {
+		googleJavaFormat('1.17.0').aosp().reflowLongStrings()
+		formatAnnotations()
+		licenseHeader '/*\n' +
+				' * Copyright $YEAR Google LLC\n' +
+				' *\n' +
+				' * Licensed under the Apache License, Version 2.0 (the "License");\n' +
+				' * you may not use this file except in compliance with the License.\n' +
+				' * You may obtain a copy of the License at\n' +
+				' *\n' +
+				' *     http://www.apache.org/licenses/LICENSE-2.0\n' +
+				' *\n' +
+				' * Unless required by applicable law or agreed to in writing, software\n' +
+				' * distributed under the License is distributed on an "AS IS" BASIS,\n' +
+				' * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n' +
+				' * See the License for the specific language governing permissions and\n' +
+				' * limitations under the License.\n' +
+				' */'
+	}
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_11
+	targetCompatibility = JavaVersion.VERSION_11
+}
+
+mainClassName = System.getProperty('mainClass', 'com.google.cloud.solutions.PubSubToBigQueryIngestionPipeline')
+
+dependencies {
+	implementation group: 'org.apache.beam', name: 'beam-sdks-java-core', version: dataflowBeamVersion
+	implementation(group: 'org.apache.beam', name: 'beam-runners-google-cloud-dataflow-java', version: dataflowBeamVersion)  {
+		exclude group: 'io.confluent', module: 'kafka-schema-registry-client'
+		exclude group: 'io.confluent', module: 'kafka-avro-serializer'
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
