@@ -111,7 +111,7 @@ echo "Starting draining the original pipeline..."
 gcloud dataflow jobs drain "${pipeline_id_to_replace}" --region "${GCP_REGION}"
 
 DEFAULT_MIN_WORKERS=2
-DEFAULT_MAX_WORKERS=10
+DEFAULT_MAX_WORKERS=30
 
 echo "Changing autoscaling parameters of the new pipeline..."
 ./update-pipeline-scaling.sh "${PROJECT_ID}" "${GCP_REGION}" "${replacement_pipeline_id}" ${DEFAULT_MIN_WORKERS} ${DEFAULT_MAX_WORKERS}

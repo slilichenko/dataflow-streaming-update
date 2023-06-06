@@ -13,7 +13,7 @@ Test code for low latency streaming pipeline updates
 ```text
 project_id = "<your project id>"
 ```
-2. Create infrastructure to run:
+3. Create infrastructure to run:
 ```shell
 cd terraform
 terraform init
@@ -59,7 +59,13 @@ in processing time
 ```
 
 ### Analyse the data
-All scripts below have time ranges defined in the beginning of the scripts. Adjust them as needed.
+All scripts below have time ranges defined in the beginning of the scripts, typically 20 minute intervals. 
+Adjust them as needed. For example, if you would like to check for a fixed time period add these lines after `DECLARE` statements:
+
+```sql
+SET start_ts = TIMESTAMP '2023-06-06 08:32:00.00 America/Los_Angeles';
+SET end_ts = TIMESTAMP '2023-06-06 08:45:00.00 America/Los_Angeles';
+```
 
 #### Event latencies comparison
 Use the following query to compare latency of ingest of the baseline pipeline and the main pipeline:
