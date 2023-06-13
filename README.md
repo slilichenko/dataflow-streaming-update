@@ -68,7 +68,7 @@ SET end_ts = TIMESTAMP '2023-06-06 08:45:00.00 America/Los_Angeles';
 ```
 
 #### Event latencies comparison
-Use the following query to compare latency of ingest of the baseline pipeline and the main pipeline:
+Use the following query to compare latency of ingestion of the baseline pipeline and the main pipeline:
 
 ```sql
 DECLARE
@@ -113,8 +113,7 @@ SELECT
 FROM
   pipeline_update.event base
 WHERE
-  base.publish_ts BETWEEN start_ts
-  AND end_ts
+  base.publish_ts BETWEEN start_ts AND end_ts
   AND pipeline_type = 'baseline'
   AND NOT EXISTS(
   SELECT
@@ -122,8 +121,7 @@ WHERE
   FROM
     pipeline_update.event main
   WHERE
-    main.publish_ts BETWEEN start_ts
-    AND end_ts
+    main.publish_ts BETWEEN start_ts AND end_ts
     AND pipeline_type = 'main'
     AND base.id = main.id);
 ```
@@ -143,8 +141,7 @@ SELECT
 FROM
   pipeline_update.event base
 WHERE
-  base.publish_ts BETWEEN start_ts
-  AND end_ts
+  base.publish_ts BETWEEN start_ts AND end_ts
 GROUP BY id, pipeline_type
 HAVING event_count > 1
 ```
@@ -171,7 +168,7 @@ WITH
 SELECT
   event_distinct_count,
   counts.total_event_count - counts.event_distinct_count AS dups_count,
-  (counts.total_event_count - counts.event_distinct_count)*100/counts.total_event_count dups_percentage,
+  (counts.total_event_count - counts.event_distinct_count)*100/counts.event_distinct_count dups_percentage,
   pipeline_type
 FROM
   counts
