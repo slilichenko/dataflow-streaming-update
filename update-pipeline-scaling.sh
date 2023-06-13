@@ -26,6 +26,11 @@ min_num_workers=$4
 max_num_workers=$5
 
 
+gcloud beta dataflow jobs update-options ${job_id} --min-num-workers=${min_num_workers} --max-num-workers=${max_num_workers} --region=${region}
+
+exit 0;
+
+# Code below is a working example of how the REST API can be invoked in case gcloud command is not available
 status_code=$(curl -X PUT "https://dataflow.googleapis.com/v1b3/projects/${project_id}/locations/${region}/jobs/${job_id}?updateMask=runtime_updatable_params.max_num_workers,runtime_updatable_params.min_num_workers" \
   -H "Authorization: Bearer $(gcloud auth print-access-token)" \
   -H 'Content-Type: application/json' \
