@@ -48,6 +48,7 @@ set -x
  --region=${GCP_REGION} \
  --enableStreamingEngine \
  --diskSizeGb=30 \
+ --serviceAccount=${DATAFLOW_SA} \
  --experiments=${EXPERIMENTS} \
  --datasetName=${BQ_DATASET} \
  --tableName=${TABLE_NAME} \

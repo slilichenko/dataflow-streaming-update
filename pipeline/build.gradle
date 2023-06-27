@@ -13,7 +13,7 @@ apply plugin: 'idea'
 apply plugin: "com.diffplug.spotless"
 
 ext {
-	dataflowBeamVersion = '2.47.0'
+	dataflowBeamVersion = '2.48.0'
 }
 
 repositories {
