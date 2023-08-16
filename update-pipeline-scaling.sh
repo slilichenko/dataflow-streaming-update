@@ -26,7 +26,7 @@ min_num_workers=$4
 max_num_workers=$5
 
 
-gcloud beta dataflow jobs update-options ${job_id} --min-num-workers=${min_num_workers} --max-num-workers=${max_num_workers} --region=${region}
+gcloud dataflow jobs update-options ${job_id} --min-num-workers=${min_num_workers} --max-num-workers=${max_num_workers} --region=${region}
 
 exit 0;
 
